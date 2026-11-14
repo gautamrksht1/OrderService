@@ -60,29 +60,30 @@ def place_order(request:OrderRequest):
         }
 
     db = SessionLocal()
+    try:
+        order = Order(
+            book_id=request.book_id,
+            quantity=request.quantity,
+            total_amount=book["price"] * request.quantity,
+            order_status="SUCCESS"
+        )
 
-    order = Order(
-        book_id=request.book_id,
-        quantity=request.quantity,
-        total_amount=
-            book["price"] * request.quantity,
-        order_status="SUCCESS"
-    )
+        db.add(order)
+        db.commit()
+        db.refresh(order)
 
-    db.add(order)
-
-    db.commit()
-
-    db.refresh(order)
-
-    return {
-        "success":True,
-        "order_id":order.id
-    }
+        return {
+            "success":True,
+            "order_id":order.id
+        }
+    finally:
+        db.close()
 
 @app.get("/orders")
 def get_orders():
 
     db = SessionLocal()
-
-    return db.query(Order).all()
+    try:
+        return db.query(Order).all()
+    finally:
+        db.close()
